@@ -9,16 +9,15 @@
 omega <- expand.grid(c("K", "Z"), c("K", "Z"))
 
 # Ereignis A: Mindestens einmal Kopf
-A <- omega[apply(omega, 1, function(x) "K" %in% x), ]
+A <- omega[apply(omega, 1, function(x){"K"  %in% x} ), ] # apply(omega, 1, function(x) "K" %in% x) prüft, ob "K" in der Zeile x enthalten ist
 print(A)
 
 # Wahrscheinlichkeit von A
-P_A <- nrow(A) / nrow(omega)
+P_A <- nrow(A) / nrow(omega) # nrow() gibt die Anzahl der Zeilen zurück
 P_A
 
 # 1.2 Axiomatik der Wahrscheinlichkeitstheorie -----
 # Beispiel: Laplace-Wahrscheinlichkeit eines fairen Würfels
-
 # Grundgesamtheit
 omega <- 1:6
 
@@ -26,7 +25,7 @@ omega <- 1:6
 A <- c(2, 4, 6)
 
 # Wahrscheinlichkeit P(A)
-P_A <- length(A) / length(omega)
+P_A <- length(A) / length(omega) # length() gibt die Anzahl der Elemente zurück
 P_A
 
 # 1.3 Multiplikationssatz für bedingte Wahrscheinlichkeiten -----

@@ -4,7 +4,8 @@ source("functions/packages.R")
 
 file_path_to <- "data/input/kc_house_data.csv"
 # Datensatz einlesen
-data <- read.csv(file_path_to)
+data <-read.csv(file_path_to) %>% 
+  mutate(date = lubridate::as_date(date))
 
 # 1. Datenauswahl und Beschreibung -----
 # Variablenbeschreibung:
@@ -16,9 +17,53 @@ str(data)
 numerics <- data %>% select_if(is.numeric)
 summary(numerics)
 
+# Manipulation der Daten
+data$waterfront <- factor(data$waterfront, labels = c("No", "Yes"))
+# data$date <- as.POSIXct(data$date, format = "%Y%M%dT%H%M%S")
+data <-  data %>% 
+  mutate(year = as.factor(year(date)),
+         view = as.factor(view)) 
+
+summary(data)                         
+sd(data$price)
+mean(data$price)
+
+
+# Korrelationsmatrix  
+cor_matrix <- cor(numerics)
+cor_matrix
+# Heatmap der Korrelationsmatrix 
+library(reshape2)
+ggplot(data = melt(cor_matrix), aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0) +
+  theme_minimal() +
+  ggtitle("Korrelationsmatrix der numerischen Variablen")
+
+# Barplot: Anzahl der Häuser mit oder ohne Wasserblick
+ggplot(data, aes(x = waterfront, fill = waterfront)) +
+  geom_bar() +
+  ggtitle("Anzahl der Häuser mit oder ohne Wasserblick") +
+  xlab("Wasserblick") +
+  ylab("Anzahl")
+
+ggplot(data, aes(x = yr_built, fill = year)) +
+  geom_bar() +
+  ggtitle("Anzahl der Häuser nach Baujahr") +
+  xlab("Baujahr") +
+  ylab("Anzahl")
+
+# 2.1. Deskriptive Statistik für kategoriale Variablen
+categoricals <- data %>% select_if(is.factor)
+summary(categoricals)
 # Histogramm für den Verkaufspreis
+# base R plot
+hist(data$price, breaks = 30, col = "blue", xlab = "Preis" ,freq = FALSE, ylab = "Häufigkeit",
+     main = "Histogramm des Verkaufspreises")
+
+# ggplot2 Grafik
 ggplot(data, aes(x = price)) +
-  geom_histogram(bins = 30, fill = "blue", color = "black") +
+  geom_histogram(bins = 30, fill = "blue", color = "black", ) +
   ggtitle("Histogramm des Verkaufspreises") +
   xlab("Preis") +
   ylab("Häufigkeit")
@@ -38,7 +83,7 @@ ggplot(data, aes(x = sqft_living, y = price)) +
   xlab("Wohnfläche (sqft)") +
   ylab("Preis")
 
-# 3. Wahrscheinlichkeitstheorie anwenden
+# 3. Wahrscheinlichkeitstheorie anwenden -----
 # Verteilungsanpassung für den Verkaufspreis
 ggplot(data, aes(sample = price)) +
   stat_qq() +
@@ -49,18 +94,22 @@ ggplot(data, aes(sample = price)) +
 mean_price <- mean(data$price)
 std_dev_price <- sd(data$price)
 
-# Wahrscheinlichkeit, dass Preis > 500000
+# Wahrscheinlichkeit, dass Preis > 500000 
+# relative Häufigkeit für Preis > 500000 also unsere emp. Wahrscheinlichkeit
+length(data$price[data$price > 500000]) / length(data$price)
+# wenn wir annehmen, dass die Daten der Normalverteilung folgen
 prob_price_greater_500k <- 1 - pnorm(500000, mean = mean_price, sd = std_dev_price)
 prob_price_greater_500k
 
 
-# 3.1. Kolmogorov-Smirnov Test
+
+# 3.1. Kolmogorov-Smirnov Test -----
 ks_test <- ks.test(data$price, "pnorm", mean = mean(data$price), sd = sd(data$price))
 print(ks_test)
 # Installieren Sie das Paket nortest, falls es nicht installiert ist
 if (!require(nortest)) install.packages("nortest")
 library(nortest)
-# 3.2. Anderson-Darling-Test für Normalverteilung
+# 3.2. Anderson-Darling-Test für Normalverteilung. -----
 ad_test <- ad.test(data$price)
 print(ad_test)
 
@@ -73,7 +122,23 @@ ggplot(data, aes(x = price)) +
   xlab("Preis") +
   ylab("Dichte")
 
-# 3.3 Maximum-Likelihood-Methode (MLE)
+options(scipen=99999)
+plot(ecdf(data$price), xlim = c(-50000, 2000000),
+     main = "Empirische Verteilungsfunktion des Verkaufspreises")
+curve(pnorm(x,mean = mean_price, sd = std_dev_price ), add = T , col = "red" , lwd = 2 , lty = 2) #  pnorm ist - Wahrscheinlichkeit 
+
+### Kommas in der darstellung, Recherche
+
+hist(data$price, breaks = 40, col = "blue", xlab = "Preis", freq = FALSE, ylab = "Dichte",
+     main = "Histogramm des Verkaufspreises", xlim = c(-500000, 2000000))
+lines(density(data$price), col = 3, lwd = 2)
+lines(density(rnorm(1000, mean = mean_price, sd = std_dev_price)), col= 2 , lwd = 2) # dichte der Normalverteilung aus den zufälligen Zahlen 
+# mit density bekomnme ich eine durchgezogene Linie
+lines(seq(-500000, 2000000, by = 1),dnorm(seq(-500000, 2000000, by = 1), mean = mean_price, sd = std_dev_price), col= 4 , lwd = 2)
+
+
+
+# 3.3 Maximum-Likelihood-Methode (MLE). ------
 # Beispiel: Schätzung für Normalverteilung
 log_likelihood <- function(params) {
   mu <- params[1]

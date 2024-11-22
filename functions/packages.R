@@ -1,4 +1,6 @@
 install.packages(c("tidyverse", "ggplot2", "dplyr", "readr", "knitr", "kableExtra", "car", "MASS", "psych", "nortest", "moments", "ggpubr", "corrplot", "lmtest", "sandwich"))
+install.packages("reshape2")
+library(reshape2)
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
