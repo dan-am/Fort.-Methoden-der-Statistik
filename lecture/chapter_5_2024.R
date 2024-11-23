@@ -9,11 +9,34 @@ data <-read.csv(file_path_to) %>%
   mutate(date = lubridate::as_date(date))
 
 # 5.1. Hypothesenformulierung ----
+# Ziel: Überprüfen, ob der durchschnittliche Preis der Immobilien und ob dieser höher als 0 ist.
+# H0: Der durchschnittliche Preis ist kleiner oder gleich 0 (µ =< 0).
+# H1: Der durchschnittliche Preis ist größer 0 (µ > 0).
+
+# 5.1a Testdurchführung -----
+# Mittelwert des Preises
+mean_price <- mean(data$price)
+std_dev_price <- sd(data$price)
+sample_size <- nrow(data)
+
+# t-Test
+t_test_result <- t.test(data$price, mu = 0, alternative = "greater", conf.level = 0.99)
+# Kritischer t-Wert für ein zweiseitiges Signifikanzniveau von 0.05
+alpha <- 0.05 # Signifikanzniveau
+df <- 21612  # Freiheitsgrade
+critical_t <- qt(1 - alpha , df) # Das ist der OBERE kritische Wert. Der Untere wäre mit "qt(alpha/2, df)" zu berechnen.
+critical_t # kritischer t-Wert
+qnorm(1 - alpha) # kritischer z-Wert
+print(t_test_result)
+# Ergebnis: Ich lehne die H0 ab, da der p-Wert kleiner als 0.05 ist. 
+# und der kritische Wert kleiner als der t-Wert ist
+
+
 # Ziel: Überprüfen, ob der durchschnittliche Preis der Immobilien 500.000 beträgt.
 # H0: Der durchschnittliche Preis ist gleich 500.000 (µ = 500.000).
 # H1: Der durchschnittliche Preis ist ungleich 500.000 (µ ≠ 500.000).
 
-# 5.2. Testdurchführung -----
+# 5.1b Testdurchführung -----
 # Mittelwert des Preises
 mean_price <- mean(data$price)
 std_dev_price <- sd(data$price)
