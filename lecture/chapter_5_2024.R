@@ -1,9 +1,19 @@
-# 1. Hypothesenformulierung
+# Einlesen der pakete
+source("functions/packages.R") # wenn dei paket nicht installiert sind, wird es installiert
+source("functions/library.R")
+# Laden der notwendigen Bibliotheken
+
+file_path_to <- "data/input/kc_house_data.csv"
+# Datensatz einlesen
+data <-read.csv(file_path_to) %>% 
+  mutate(date = lubridate::as_date(date))
+
+# 5.1. Hypothesenformulierung ----
 # Ziel: Überprüfen, ob der durchschnittliche Preis der Immobilien 500.000 beträgt.
 # H0: Der durchschnittliche Preis ist gleich 500.000 (µ = 500.000).
 # H1: Der durchschnittliche Preis ist ungleich 500.000 (µ ≠ 500.000).
 
-# 2. Testdurchführung
+# 5.2. Testdurchführung -----
 # Mittelwert des Preises
 mean_price <- mean(data$price)
 std_dev_price <- sd(data$price)
@@ -19,10 +29,9 @@ qqnorm(data$price, main = "QQ-Plot für Preis")
 qqline(data$price, col = "red")
 
 # Shapiro-Wilk-Test (nur für Stichproben bis 5000 Beobachtungen)
-if (sample_size <= 5000) {
-  shapiro_test <- shapiro.test(data$price)
+  shapiro_test <- shapiro.test(sample(data$price, 5000))
   print(shapiro_test)
-}
+
 
 # Kolmogorov-Smirnov-Test (Alternative für größere Stichproben)
 ks_test <- ks.test(data$price, "pnorm", mean = mean_price, sd = std_dev_price)
