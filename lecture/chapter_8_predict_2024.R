@@ -11,7 +11,7 @@ data <-read.csv(file_path_to) %>%
 
 # Wählen relevanter Variablen für die Regression
 # Preis ist die Zielvariable, Wohnfläche, Schlafzimmer und Waterfront sind Prädiktoren
-data <- data[, c("price", "sqft_living", "waterfront", "bedrooms")]
+data <- data[, c("price", "sqft_living", "waterfront", "bedrooms")] # das hier ist base R
 
 # ---- 1. Aufteilen der Daten in Trainings- und Testdaten ------------------
 set.seed(42)  # Reproduzierbarkeit
@@ -22,10 +22,13 @@ test_data <- data[-train_indices, ]
 # ---- 2. Multiple Regression: Modelltraining -----------------------------
 # Modell auf den Trainingsdaten erstellen
 model <- lm(price ~ sqft_living + bedrooms + waterfront, data = train_data)
+sqrt(mean((train_data$price - model$fitted.values )^2)) # in-sample RMSE Y_train - Y_train_pred
+sqrt(mean((model$residuals )^2)) # in-sample RMSE epsilon
 
 # Modellzusammenfassung
 cat("Modellzusammenfassung:\n")
-summary(model)
+summary(model) 
+
 
 # ---- 3. Modellbewertung -------------------------------------------------
 # Vorhersagen auf den Testdaten
@@ -37,6 +40,7 @@ r_squared <- cor(actual_prices, predicted_prices)^2
 cat("R² auf den Testdaten:", r_squared, "\n")
 
 # Berechnung des Mittleren Absoluten Fehlers (MAE) und des Root Mean Square Error (RMSE)
+# für out-of-sample Vorhersagen von höherer Bedeutung
 mae <- mean(abs(actual_prices - predicted_prices))
 rmse <- sqrt(mean((actual_prices - predicted_prices)^2))
 cat("Mittlerer Absoluter Fehler (MAE):", mae, "\n")
