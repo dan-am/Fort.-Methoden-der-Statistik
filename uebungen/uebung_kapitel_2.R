@@ -16,7 +16,18 @@
 # c) Visualisiere die geschätzten Randverteilungen (Histogramme) von X und Y
 #    nebeneinander (par(mfrow = c(1,2))).
 #
+
+
+# falls noch nicht installiert
+install.packages("plotly", dependencies = TRUE)
+install.packages("MASS", dependencies = TRUE)
+install.packages("ggplot2", dependencies = TRUE)
+
+
 # Lösungsskizze:
+library(MASS)
+library(ggplot2)
+library(plotly)
 
 data(iris)
 X <- iris$Sepal.Length
@@ -39,6 +50,28 @@ hist(X, col = "skyblue", main = "Randverteilung Sepal.Length", xlab = "X")
 hist(Y, col = "salmon",  main = "Randverteilung Petal.Length", xlab = "Y")
 par(mfrow = c(1, 1))
 
+# ein Merkmal auf die 3 Blumentypen
+ggplot(iris, aes(x = Sepal.Length, fill = Species, color = Species)) +
+  geom_histogram(binwidth = 0.2, position = "identity", alpha = 0.6) +
+  ggtitle("Randverteilung Sepal.Length") +
+  xlab("Sepal.Length") + ylab("Häufigkeit")
+
+# 3D Darstellung eines Scatterplots mit plotly
+library(plotly)
+plot_ly(iris, x = ~Sepal.Length, y = ~Petal.Length, 
+z = ~Petal.Width, color = ~Species, colors = c("red", "green", "blue")) %>%
+  add_markers() %>%
+  layout(title = "3D Scatterplot: Sepal.Length vs. Petal.Length vs. Petal.Width",
+         scene = list(xaxis = list(title = "Sepal.Length"),
+                      yaxis = list(title = "Petal.Length"),
+                      zaxis = list(title = "Petal.Width")))
+
+# Heatmap 
+ggplot(iris, aes(x = Sepal.Length, y = Petal.Length)) +
+  geom_bin2d(bins = 30) +
+  ggtitle("Heatmap: Sepal.Length vs. Petal.Length") +
+  xlab("Sepal.Length") + ylab("Petal.Length") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue")
 
 # -----------------------------------------------------------------------------
 # Aufgabe 2 – 2-dimensionale Normalverteilung simulieren
@@ -49,7 +82,6 @@ par(mfrow = c(1, 1))
 # Vergleiche grafisch rho = 0 und rho = 0.8.
 
 # install.packages("MASS")
-library(MASS)
 set.seed(123)
 
 simuliere_2dnormal <- function(rho, n = 5000) {
@@ -57,8 +89,8 @@ simuliere_2dnormal <- function(rho, n = 5000) {
   mvrnorm(n = n, mu = c(0, 0), Sigma = Sigma)
 }
 
-dat0   <- simuliere_2dnormal(0)
-dat08  <- simuliere_2dnormal(0.8)
+dat0   <- data.frame(simuliere_2dnormal(0))
+dat08  <-  data.frame(simuliere_2dnormal(0.8))
 
 par(mfrow = c(1, 2))
 plot(dat0,  pch = 20, col = "blue",
@@ -68,6 +100,12 @@ plot(dat08, pch = 20, col = "red",
 par(mfrow = c(1, 1))
 
 
+# Heatmap 
+ggplot(dat08, aes(x = X1, y = X2)) +
+  geom_bin2d(bins = 30) +
+  xlab("X1") + ylab("X2") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue")
+
 # -----------------------------------------------------------------------------
 # Aufgabe 3 – Tschebyscheff-Ungleichung
 # -----------------------------------------------------------------------------
@@ -76,6 +114,7 @@ par(mfrow = c(1, 1))
 #   - obere Schranke laut Tschebyscheff: Var(X) / epsilon^2
 #
 # Was beobachtest du?
+set.seed(123)
 
 mu  <- 0
 sig <- 1
