@@ -33,6 +33,7 @@ boxplot(mpg ~ am, data = mtcars, names = c("Automatik", "Schalt"),
         main = "Verbrauch nach Getriebe", ylab = "mpg")
 
 # b) Normalverteilung pro Gruppe
+# H0 
 sw0 <- shapiro.test(g0)
 sw1 <- shapiro.test(g1)
 cat("SW Automatik: p =", round(sw0$p.value, 4), "\n")
@@ -42,7 +43,8 @@ cat("SW Schalt   : p =", round(sw1$p.value, 4), "\n")
 vt <- var.test(g0, g1)
 cat("F-Test auf gleiche Varianz: p =", round(vt$p.value, 4), "\n")
 
-# d) zweiseitiger t-Test
+# d) zweiseitiger Zweistichproben t-Test
+# H0 gleiche Mittelwerte
 t_glh <- t.test(g0, g1, var.equal = TRUE)               # gleiche Varianzen
 t_welch <- t.test(g0, g1, var.equal = FALSE)             # Welch-Test
 print(t_glh)
@@ -58,6 +60,8 @@ cat("Mann-Whitney-U: p =", round(mw$p.value, 4), "\n")
 # -----------------------------------------------------------------------------
 # H0: mu_schalt <= mu_auto
 # H1: mu_schalt  > mu_auto
+mean(g1)
+mean(g0)
 
 t_einseitig <- t.test(g1, g0, alternative = "greater", var.equal = FALSE)
 print(t_einseitig)
@@ -77,6 +81,9 @@ g_d2 <- end$weight[end$Diet == 2]
 cat("Mittelwert Diät 1:", round(mean(g_d1), 2), "\n")
 cat("Mittelwert Diät 2:", round(mean(g_d2), 2), "\n")
 
+# F-Test auf gleiche Varianz
+var.test(g_d1, g_d2)
+
 # Welch-t-Test (n klein, ungleiche Gruppen)
 welch <- t.test(g_d1, g_d2, var.equal = FALSE)
 print(welch)
@@ -86,9 +93,12 @@ ggplot(end[end$Diet %in% c(1, 2), ],
        aes(x = factor(Diet), y = weight, fill = factor(Diet))) +
   geom_boxplot(alpha = 0.7) +
   labs(title = "Endgewicht der Küken (Tag 21)",
-       x = "Diät", y = "Gewicht") +
-  theme_minimal()
+       x = "Diät", y = "Gewicht") 
 
+sub <- end[end$Diet %in% c(1, 2), ]
+boxplot(weight ~ Diet, data = sub,
+        col = c("lightgreen", "lightcoral"),
+        main = "Endgewicht der Küken (Tag 21)")
 
 # -----------------------------------------------------------------------------
 # Aufgabe 4 – Iris: Sepal.Length zwischen setosa und versicolor
@@ -99,7 +109,7 @@ data(iris)
 sl_set <- iris$Sepal.Length[iris$Species == "setosa"]
 sl_ver <- iris$Sepal.Length[iris$Species == "versicolor"]
 
-# F-Test + t-Test
+# F-Test + t-Test / hier wieder ein sehr kleines n -> Welch-Test
 v_iris <- var.test(sl_set, sl_ver)
 t_iris <- t.test(sl_set, sl_ver, var.equal = (v_iris$p.value > 0.05))
 cat("F-Test p-Wert:", round(v_iris$p.value, 4), "\n")

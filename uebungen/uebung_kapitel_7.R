@@ -45,14 +45,16 @@ ggplot(mtcars, aes(x = wt, y = mpg)) +
 
 set.seed(2025)
 x <- 1:50
-y <- x^2 + rnorm(50, mean = 0, sd = 50)
+y <- x^2 + rnorm(50, mean = 10, sd = 150)
 
 cat("Pearson  =", round(cor(x, y, method = "pearson"),  3), "\n")
 cat("Spearman =", round(cor(x, y, method = "spearman"), 3), "\n")
 
 plot(x, y, pch = 20, col = "darkblue",
      main = "Monoton, aber nichtlinear -> Spearman > Pearson")
+lines(x, x^2, col = "red", lwd = 2)
 
+cor.test(x, y, method = "spearman")
 
 # -----------------------------------------------------------------------------
 # Aufgabe 3 – Korrelationsmatrix für iris
@@ -67,6 +69,11 @@ print(M)
 # einfache Visualisierung mit base R
 heatmap(M, symm = TRUE, margins = c(8, 8), main = "Korrelationsmatrix iris")
 
+install.packages("corrplot")
+library(corrplot)
+corrplot::corrplot(M, method = "color", addCoef.col = "black",
+               tl.col = "black", tl.srt = 45, number.cex = 0.8,
+               title = "Korrelationsmatrix iris", mar = c(0, 0, 1, 0))
 
 # -----------------------------------------------------------------------------
 # Aufgabe 4 – Chi-Quadrat-Unabhängigkeitstest
@@ -84,7 +91,7 @@ chi <- chisq.test(tab)
 print(chi)
 
 # Bei kleinen Erwartungswerten ggf. Simulation:
-chi_sim <- chisq.test(tab, simulate.p.value = TRUE, B = 5000)
+chi_sim <- chisq.test(tab, simulate.p.value = TRUE, B = 10000)
 print(chi_sim)
 
 
@@ -101,6 +108,10 @@ print(he)
 mosaicplot(he, color = TRUE, las = 1,
            main = "Haarfarbe vs. Augenfarbe",
            xlab = "Haar", ylab = "Augen")
+
+t(he)
+colSums(t(he))
+rowSums(t(he))
 
 chi_he <- chisq.test(he)
 cat("Chi-Quadrat-Test HairEyeColor: p =",

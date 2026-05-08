@@ -93,11 +93,15 @@ qqnorm(x, main = "QQ-Plot mtcars$mpg", pch = 20)
 qqline(x, col = "red", lwd = 2)
 
 # b) Shapiro-Wilk
+# H0: Daten sind normalverteilt
+# H1: Daten sind nicht normalverteilt
 sw <- shapiro.test(x)
 cat("Shapiro-Wilk: W =", round(sw$statistic, 4),
     ", p =", round(sw$p.value, 4), "\n")
 
 # c) Kolmogorov-Smirnov
+# H0: Daten sind normalverteilt
+# H1: Daten sind nicht normalverteilt
 ks <- ks.test(x, "pnorm", mean = mean(x), sd = sd(x))
 cat("KS-Test:      D =", round(ks$statistic, 4),
     ", p =", round(ks$p.value, 4), "\n")
@@ -145,3 +149,38 @@ print(paar_test)
 # Visualisierung
 boxplot(extra ~ group, data = sleep, col = c("skyblue", "salmon"),
         main = "Schlafverlängerung pro Gruppe", ylab = "extra")
+
+
+
+#######
+diff <- g2 - g1
+mean(diff)
+
+
+# Histogramm der gepaarten Differenzen
+hist(diff,
+     breaks = 8,
+     col = "lightgray",
+     border = "white",
+     main = "Histogramm der gepaarten Differenzen",
+     xlab = "Differenz: Gruppe 2 - Gruppe 1")
+
+# Null-Linie: kein Unterschied
+abline(v = 0, col = "black", lwd = 2, lty = 2)
+
+# Mittelwert der Differenzen
+abline(v = mean(diff), col = "red", lwd = 3)
+
+# Kritische kleine Werte markieren, z.B. Differenzen nahe 0
+kritisch <- 0.2
+
+abline(v = -kritisch, col = "blue", lwd = 2, lty = 3)
+abline(v = kritisch, col = "blue", lwd = 2, lty = 3)
+
+legend("topright",
+       legend = c("Kein Unterschied", 
+                  "Mittelwert der Differenzen",
+                  "kritischer Bereich nahe 0"),
+       col = c("black", "red", "blue"),
+       lty = c(2, 1, 3),
+       lwd = c(2, 3, 2))
