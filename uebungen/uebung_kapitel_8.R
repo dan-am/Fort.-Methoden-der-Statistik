@@ -45,6 +45,13 @@ predict(mod1, newdata = neu, interval = "prediction", level = 0.95)
 # b) Welche Variablen sind signifikant (p-Wert)?
 # c) Vergleiche R^2 und adjusted R^2 mit Modell 1.
 
+plot(mod1$residuals, pch = 20, col = "orange",
+     xlab = "Index", ylab = "Residuen",
+     main = "Residuen von Modell 1")
+
+hist(mod1$residuals, breaks = 12, col = "lightgray", freq = FALSE,
+     main = "Histogramm der Residuen von Modell 1", xlab = "Residuen")
+
 mod2 <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 summary(mod2)
 
@@ -65,8 +72,12 @@ par(mfrow = c(2, 2))
 plot(mod2)
 par(mfrow = c(1, 1))
 
-hist(residuals(mod2), breaks = 12, col = "lightgray",
+hist(residuals(mod2), breaks = 12, col = "lightgray",freq = FALSE,
      main = "Histogramm der Residuen", xlab = "Residuen")
+
+plot(mod1$residuals, pch = 20, col = "darkgreen",
+     xlab = "Index", ylab = "Residuen",
+     main = "Residuen von Modell 1")
 
 sw <- shapiro.test(residuals(mod2))
 cat("Shapiro-Wilk Residuen: p =", round(sw$p.value, 4), "\n")
