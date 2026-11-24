@@ -148,7 +148,7 @@ cat("CV-RMSE (Mittel):", round(mean(rmse_folds), 3), "\n")
 mod <- lm(mpg ~ hp, data = mtcars)
 neue_hp <- data.frame(hp = seq(50, 330, by = 10))
 ci  <- predict(mod, newdata = neue_hp, interval = "confidence", level = 0.95)
-pi  <- predict(mod, newdata = neue_hp, interval = "prediction", level = 0.95)
+vi  <- predict(mod, newdata = neue_hp, interval = "prediction", level = 0.95)  # nicht "pi": das ist die Kreiszahl
 
 plot(mtcars$hp, mtcars$mpg, pch = 20, col = "steelblue",
      xlab = "hp", ylab = "mpg",
@@ -156,8 +156,8 @@ plot(mtcars$hp, mtcars$mpg, pch = 20, col = "steelblue",
 lines(neue_hp$hp, ci[, "fit"], col = "red", lwd = 2)
 lines(neue_hp$hp, ci[, "lwr"], col = "red", lty = 2)
 lines(neue_hp$hp, ci[, "upr"], col = "red", lty = 2)
-lines(neue_hp$hp, pi[, "lwr"], col = "blue", lty = 3)
-lines(neue_hp$hp, pi[, "upr"], col = "blue", lty = 3)
+lines(neue_hp$hp, vi[, "lwr"], col = "blue", lty = 3)
+lines(neue_hp$hp, vi[, "upr"], col = "blue", lty = 3)
 legend("topright",
        c("Regression", "95%-KI Mittelwert", "95%-Vorhersage-Intervall"),
        col = c("red", "red", "blue"), lty = c(1, 2, 3), lwd = c(2, 1, 1))
@@ -183,5 +183,8 @@ par(mfrow = c(1, 1))
 
 cat("R^2 (Ozone)     =", round(summary(mod1)$r.squared, 3), "\n")
 cat("R^2 (log Ozone) =", round(summary(mod2)$r.squared, 3), "\n")
-# -> die Log-Transformation linearisiert den Zusammenhang und stabilisiert
-#    die Varianz der Residuen.
+# -> Die Log-Transformation linearisiert den Zusammenhang und stabilisiert
+#    die Varianz der Residuen (Residuenplots vergleichen).
+# Achtung: Die beiden R^2 beziehen sich auf verschiedene Zielgrößen (Ozone bzw.
+# log(Ozone)) und sind deshalb nur eingeschränkt vergleichbar. Aussagekräftiger
+# ist der Blick auf die Residuenplots.

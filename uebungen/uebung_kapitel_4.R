@@ -3,7 +3,7 @@
 # Themen: KI für mu (sigma bekannt / unbekannt), KI für sigma^2,
 #         asymptotisches KI für p, Überdeckungswahrscheinlichkeit,
 #         Stichprobenumfang
-# Datensätze: sleep, mtcars (R-base)
+# Datensätze: mtcars (R-base)
 # =============================================================================
 
 
@@ -91,7 +91,8 @@ KI_p <- c(p_hat - z * se, p_hat + z * se)
 cat("p_hat =", p_hat, "\n")
 cat("95% KI für p:", round(KI_p, 4), "\n")
 
-# Vergleich:
+# Vergleich: prop.test() berechnet das Wilson-Intervall. Es weicht leicht von der
+# Normal-Approximation oben (Wald-Intervall) ab und ist bei kleinen n genauer.
 prop.test(k, n, conf.level = 0.95, correct = FALSE)$conf.int
 
 

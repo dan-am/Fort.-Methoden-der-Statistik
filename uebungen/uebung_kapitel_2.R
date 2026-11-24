@@ -18,10 +18,10 @@
 #
 
 
-# falls noch nicht installiert
-install.packages("plotly", dependencies = TRUE)
-install.packages("MASS", dependencies = TRUE)
-install.packages("ggplot2", dependencies = TRUE)
+# Pakete installieren, falls sie noch fehlen
+pakete  <- c("plotly", "MASS", "ggplot2")
+fehlend <- setdiff(pakete, rownames(installed.packages()))
+if (length(fehlend) > 0) install.packages(fehlend, repos = "https://cloud.r-project.org")
 
 
 # Lösungsskizze:
@@ -50,10 +50,11 @@ hist(X, col = "skyblue", main = "Randverteilung Sepal.Length", xlab = "X")
 hist(Y, col = "salmon",  main = "Randverteilung Petal.Length", xlab = "Y")
 par(mfrow = c(1, 1))
 
-# ein Merkmal auf die 3 Blumentypen
+# Sepal.Length getrennt nach den drei Arten: das sind bedingte Verteilungen,
+# keine Randverteilung (die Randverteilung ist das Histogramm über alle Arten)
 ggplot(iris, aes(x = Sepal.Length, fill = Species, color = Species)) +
   geom_histogram(binwidth = 0.2, position = "identity", alpha = 0.6) +
-  ggtitle("Randverteilung Sepal.Length") +
+  ggtitle("Verteilung von Sepal.Length je Art") +
   xlab("Sepal.Length") + ylab("Häufigkeit")
 
 # 3D Darstellung eines Scatterplots mit plotly

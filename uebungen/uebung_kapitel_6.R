@@ -33,7 +33,7 @@ boxplot(mpg ~ am, data = mtcars, names = c("Automatik", "Schalt"),
         main = "Verbrauch nach Getriebe", ylab = "mpg")
 
 # b) Normalverteilung pro Gruppe
-# H0 
+# H0: Die Werte der Gruppe sind normalverteilt
 sw0 <- shapiro.test(g0)
 sw1 <- shapiro.test(g1)
 cat("SW Automatik: p =", round(sw0$p.value, 4), "\n")
@@ -109,10 +109,12 @@ data(iris)
 sl_set <- iris$Sepal.Length[iris$Species == "setosa"]
 sl_ver <- iris$Sepal.Length[iris$Species == "versicolor"]
 
-# F-Test + t-Test / hier wieder ein sehr kleines n -> Welch-Test
+# F-Test auf gleiche Varianzen, dann t-Test (je 50 Blüten pro Art).
+# Die Wahl von var.equal nach dem F-Test ist üblich, verfälscht aber das
+# Gesamtniveau leicht. Der Welch-Test ist deshalb die robuste Standardwahl.
 v_iris <- var.test(sl_set, sl_ver)
-t_iris <- t.test(sl_set, sl_ver, var.equal = (v_iris$p.value > 0.05))
 cat("F-Test p-Wert:", round(v_iris$p.value, 4), "\n")
+t_iris <- t.test(sl_set, sl_ver, var.equal = FALSE)   # Welch-Test
 print(t_iris)
 
 

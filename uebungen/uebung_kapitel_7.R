@@ -69,7 +69,9 @@ print(M)
 # einfache Visualisierung mit base R
 heatmap(M, symm = TRUE, margins = c(8, 8), main = "Korrelationsmatrix iris")
 
-install.packages("corrplot")
+if (!"corrplot" %in% rownames(installed.packages())) {
+  install.packages("corrplot", repos = "https://cloud.r-project.org")
+}
 library(corrplot)
 corrplot::corrplot(M, method = "color", addCoef.col = "black",
                tl.col = "black", tl.srt = 45, number.cex = 0.8,
@@ -124,10 +126,13 @@ cat("Chi-Quadrat-Test HairEyeColor: p =",
 # Für iris: Korrelation zwischen Sepal.Length und Petal.Length GETRENNT
 # pro Spezies. Was beobachtest du?
 
+cat("Korrelation über alle Arten:",
+    round(cor(iris$Sepal.Length, iris$Petal.Length), 3), "\n")
 for (sp in unique(iris$Species)) {
   sub <- iris[iris$Species == sp, ]
   r <- cor(sub$Sepal.Length, sub$Petal.Length)
   cat("Korrelation in", sp, ":", round(r, 3), "\n")
 }
-# -> Simpson-Paradoxon-artige Effekte: Gesamt-Korrelation kann höher als
-#    die Korrelationen innerhalb der Gruppen sein.
+# -> Die Korrelation über alle Arten (0,87) ist deutlich höher als innerhalb jeder Art:
+#    Ein großer Teil des Zusammenhangs entsteht durch die Unterschiede zwischen den Arten.
+#    Kehrt sich dabei sogar das Vorzeichen um, spricht man vom Simpson-Paradoxon.

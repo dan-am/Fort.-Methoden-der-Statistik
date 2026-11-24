@@ -4,8 +4,12 @@
 #         Residuenanalyse, Train/Test-Split, RMSE, MAE, Vorhersage
 # Datensätze: mtcars (R-base)
 # =============================================================================
-install.packages("corrplot")
-install.packages(c("caret", "ggplot2"))
+
+# Pakete installieren, falls sie noch fehlen
+pakete  <- c("caret", "ggplot2", "corrplot")
+fehlend <- setdiff(pakete, rownames(installed.packages()))
+if (length(fehlend) > 0) install.packages(fehlend, repos = "https://cloud.r-project.org")
+
 library(caret)
 library(ggplot2)
 library(corrplot)
@@ -22,8 +26,15 @@ library(corrplot)
 
 data(mtcars)
 
+# a)
 mod1 <- lm(mpg ~ wt, data = mtcars)
 summary(mod1)
+
+# b) Interpretation
+# Steigung: Je 1.000 lbs mehr Gewicht sinkt der Verbrauchswert um rund 5,3 mpg.
+# Intercept: rechnerischer Wert bei wt = 0; ein Auto ohne Gewicht gibt es nicht,
+#            der Achsenabschnitt ist hier deshalb nicht inhaltlich interpretierbar.
+# R^2: Das Gewicht erklärt rund 75 % der Streuung von mpg.
 
 # c)
 plot(mtcars$wt, mtcars$mpg, pch = 20, col = "steelblue",
@@ -45,13 +56,6 @@ predict(mod1, newdata = neu, interval = "prediction", level = 0.95)
 # b) Welche Variablen sind signifikant (p-Wert)?
 # c) Vergleiche R^2 und adjusted R^2 mit Modell 1.
 
-plot(mod1$residuals, pch = 20, col = "orange",
-     xlab = "Index", ylab = "Residuen",
-     main = "Residuen von Modell 1")
-
-hist(mod1$residuals, breaks = 12, col = "lightgray", freq = FALSE,
-     main = "Histogramm der Residuen von Modell 1", xlab = "Residuen")
-
 mod2 <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 summary(mod2)
 
@@ -68,17 +72,22 @@ cat("adj R^2 mod1:", round(summary(mod1)$adj.r.squared, 3),
 # b) Histogramm der Residuen.
 # c) Shapiro-Wilk-Test auf Normalverteilung der Residuen.
 
+# a)
 par(mfrow = c(2, 2))
 plot(mod2)
 par(mfrow = c(1, 1))
 
-hist(residuals(mod2), breaks = 12, col = "lightgray",freq = FALSE,
-     main = "Histogramm der Residuen", xlab = "Residuen")
+# b)
+hist(residuals(mod2), breaks = 12, col = "lightgray", freq = FALSE,
+     main = "Histogramm der Residuen von Modell 2", xlab = "Residuen")
 
-plot(mod1$residuals, pch = 20, col = "darkgreen",
+# Zum Vergleich: Residuen von Modell 1 in der Reihenfolge der Daten
+plot(residuals(mod1), pch = 20, col = "darkgreen",
      xlab = "Index", ylab = "Residuen",
      main = "Residuen von Modell 1")
+abline(h = 0, lty = 2)
 
+# c)
 sw <- shapiro.test(residuals(mod2))
 cat("Shapiro-Wilk Residuen: p =", round(sw$p.value, 4), "\n")
 
@@ -89,47 +98,43 @@ cat("Shapiro-Wilk Residuen: p =", round(sw$p.value, 4), "\n")
 # Aufteilung mtcars in 80 % Training und 20 % Test.
 # Modell: mpg ~ wt + hp + cyl + am.
 # Berechne MAE und RMSE auf den Testdaten.
-M = cor(mtcars)
-corrplot(M, method = "number")
+
+# Vorab: Korrelationen aller Variablen als Orientierung für die Modellwahl
+M <- cor(mtcars)
+corrplot(M, method = "number", number.cex = 0.6)
 
 set.seed(42)
 idx_train <- createDataPartition(mtcars$mpg, p = 0.8, list = FALSE)
 train <- mtcars[idx_train, ]
 test  <- mtcars[-idx_train, ]
 
-mod3 <- lm(mpg ~ wt + cyl , data = train)
+mod3 <- lm(mpg ~ wt + hp + cyl + am, data = train)
 summary(mod3)
 
+# In-sample-Fehler (auf den Trainingsdaten)
+rse         <- sqrt(sum(residuals(mod3)^2) / df.residual(mod3)) # Residualstandardfehler, mit Freiheitsgraden
+rmse_train  <- sqrt(mean(residuals(mod3)^2))                    # RMSE ohne Freiheitsgrade
+cat("RSE Training :", round(rse, 3), "| RMSE Training:", round(rmse_train, 3), "\n")
 
-# Freiheitsgrade berechenen
-n <- nrow(train)  # Anzahl Beobachtungen im Training
-p <- length(coef(mod3)) - 1  # Anzahl Prädiktoren (ohne Intercept)
-df <- n - p - 1
-
-sd(mod3$residuals)
-
-# in-sample / RMSE vor allem für Vorhersagen, out-of sample relevant
-rse = sqrt(sum(residuals(mod3)^2) / (nrow(train) - length(coef(mod3)) )) # genauere Berechnung mit Freiheitsgraden
-rmse = sqrt(sum(residuals(mod3)^2)/  nrow(train) ) # einfachere Berechnung ohne Freiheitsgrade
-
-# out-of-sample / test bzw. hold-out RMSE
+# Out-of-sample-Fehler (auf den Testdaten), für Vorhersagen entscheidend
 pred <- predict(mod3, newdata = test)
 res  <- test$mpg - pred
 
-mae  <- mean(abs(res))
-rmse <- sqrt(mean(res^2))
-cat("MAE  Test     :", round(mae,  3), "\n")
-cat("RMSE Test     :", round(rmse, 3), "\n")
+mae_test  <- mean(abs(res))
+rmse_test <- sqrt(mean(res^2))
+cat("MAE  Test     :", round(mae_test,  3), "\n")
+cat("RMSE Test     :", round(rmse_test, 3), "\n")
 
 
 # -----------------------------------------------------------------------------
 # Aufgabe 5 – Visualisierung: tatsächlich vs. vorhergesagt
 # -----------------------------------------------------------------------------
 plot_df <- data.frame(actual = test$mpg, predicted = pred)
+grenzen <- range(c(plot_df$actual, plot_df$predicted))   # gleiche Skala auf beiden Achsen
 
 ggplot(plot_df, aes(x = actual, y = predicted)) +
   geom_point(size = 3, color = "steelblue") +
-  coord_cartesian(xlim = c(10, 25), ylim = c(0, 30)) +
+  coord_equal(xlim = grenzen, ylim = grenzen) +
   geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
   labs(title = "Tatsächlich vs. Vorhergesagt (Testdaten)",
        x = "tatsächlicher mpg", y = "vorhergesagter mpg") +
@@ -151,9 +156,10 @@ ggplot(data.frame(predicted = pred, residual = res),
 # Sind die zusätzlichen Variablen in Modell 2 statistisch nötig
 # (gegenüber Modell 1 mit nur wt)?
 
-mod_klein <- lm(mpg ~ wt,           data = mtcars)
-mod_mittel <- lm(mpg ~ wt + cyl, data = mtcars)
-mod_gross <- lm(mpg ~ wt + hp + cyl, data = mtcars)
+mod_klein  <- lm(mpg ~ wt,           data = mtcars)
+mod_mittel <- lm(mpg ~ wt + cyl,      data = mtcars)
+mod_gross  <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 
-(anova(mod_klein, mod_mittel, mod_gross))
-# kleiner p-Wert -> das größere Modell erklärt signifikant mehr Varianz.
+anova(mod_klein, mod_mittel, mod_gross)
+# Kleiner p-Wert in einer Zeile: Das jeweils größere Modell erklärt signifikant
+# mehr Varianz als das Modell in der Zeile darüber.

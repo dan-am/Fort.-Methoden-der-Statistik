@@ -151,5 +151,5 @@ plot(ns, mse, type = "l", col = "darkgreen", lwd = 2,
      xlab = "Stichprobenumfang n", ylab = "MSE des Mittelwertes",
      main = "Konsistenz: MSE(X_bar) -> 0")
 lines(ns, sigma2 / ns, col = "red", lty = 2, lwd = 2)
-legend("topright", legend = c("simulated MSE", "sigma^2 / n"),
+legend("topright", legend = c("simulierter MSE", "sigma^2 / n"),
        col = c("darkgreen", "red"), lty = c(1, 2), lwd = 2)

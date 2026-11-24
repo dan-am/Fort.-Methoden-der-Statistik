@@ -42,7 +42,9 @@ cat("Exaktes 95%-KI für p:", round(bin$conf.int, 4), "\n")
 # Aufgabe 2 – Wilcoxon-Vorzeichen-Rang-Test (Test auf Median)
 # -----------------------------------------------------------------------------
 # Wenn die Normalverteilungsannahme verletzt ist, kann der Median statt des
-# Mittelwertes getestet werden.
+# Mittelwertes getestet werden. Voraussetzung des Vorzeichen-Rang-Tests: Die
+# Verteilung ist symmetrisch um den Median. Ohne diese Annahme hilft der
+# Vorzeichentest: binom.test(sum(x > 20), sum(x != 20)).
 #
 # Verwende mtcars$mpg. Hypothese: der Median liegt bei 20.
 # H0: med  = 20
@@ -172,9 +174,21 @@ plot(x, y0, type = "l", lwd = 2, col = "blue",
      xlab = "X_bar", ylab = "Dichte",
      main = "Fehler 1. und 2. Art")
 lines(x, y1, lwd = 2, col = "red")
+
+# alpha: Fläche unter der H0-Dichte rechts vom kritischen Wert
+xa <- x[x >= krit]
+polygon(c(krit, xa, max(xa)), c(0, dnorm(xa, mu0, se), 0),
+        col = rgb(0, 0, 1, 0.3), border = NA)
+# beta: Fläche unter der H1-Dichte links vom kritischen Wert
+xb <- x[x <= krit]
+polygon(c(min(xb), xb, krit), c(0, dnorm(xb, mu1, se), 0),
+        col = rgb(1, 0, 0, 0.3), border = NA)
+
 abline(v = krit, lty = 2)
 legend("topright",
-       c("H0: mu=0", "H1: mu=0.7", "krit. Wert"),
-       col = c("blue", "red", "black"), lty = c(1, 1, 2), lwd = 2)
-# Rechts vom kritischen Wert unter H0 = alpha;
-# Links  vom kritischen Wert unter H1 = beta.
+       c("H0: mu=0", "H1: mu=0.7", "krit. Wert", "alpha", "beta"),
+       col = c("blue", "red", "black", NA, NA), lty = c(1, 1, 2, NA, NA), lwd = 2,
+       fill = c(NA, NA, NA, rgb(0, 0, 1, 0.3), rgb(1, 0, 0, 0.3)),
+       border = c(NA, NA, NA, "black", "black"))
+cat("alpha =", alpha, "| beta =", round(pnorm(krit, mean = mu1, sd = se), 3),
+    "| Power =", round(1 - pnorm(krit, mean = mu1, sd = se), 3), "\n")

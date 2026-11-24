@@ -106,25 +106,40 @@ ks <- ks.test(x, "pnorm", mean = mean(x), sd = sd(x))
 cat("KS-Test:      D =", round(ks$statistic, 4),
     ", p =", round(ks$p.value, 4), "\n")
 # p > 0.05 -> Normalverteilung kann nicht verworfen werden.
+# Achtung: Mittelwert und sd werden hier aus denselben Daten geschätzt. Dann ist
+# der p-Wert des klassischen KS-Tests zu groß; korrekt ist der Lilliefors-Test:
+# nortest::lillie.test(x). Die Warnung zu Bindungen entsteht durch doppelte Werte.
 
 
 # -----------------------------------------------------------------------------
 # Aufgabe 4 – p-Wert und kritischer Bereich grafisch
 # -----------------------------------------------------------------------------
 # Visualisiere den Annahme- und Ablehnungsbereich für einen zweiseitigen
-# t-Test mit df = n - 1 Freiheitsgraden.
+# t-Test mit df = n - 1 Freiheitsgraden. Trage die Teststatistik aus
+# Aufgabe 2 (mtcars$wt, mu0 = 3.2) ein und markiere den p-Wert.
 
 n <- 32
 df <- n - 1
 alpha <- 0.05
 krit <- qt(1 - alpha/2, df)
+t_beob <- unname(res$statistic)          # Teststatistik aus Aufgabe 2
 
 curve(dt(x, df = df), from = -4, to = 4, lwd = 2,
       ylab = "Dichte t-Verteilung", xlab = "t",
       main = paste("t-Verteilung, df =", df))
+# Ablehnungsbereich: Flächen unter der Dichte jenseits der kritischen Werte (zusammen alpha)
+links  <- seq(-4, -krit, length.out = 100)
+rechts <- seq(krit, 4, length.out = 100)
+polygon(c(-4, links, -krit), c(0, dt(links, df), 0), col = rgb(1, 0, 0, 0.4), border = NA)
+polygon(c(krit, rechts, 4), c(0, dt(rechts, df), 0), col = rgb(1, 0, 0, 0.4), border = NA)
 abline(v = c(-krit, krit), col = "red", lty = 2, lwd = 2)
-legend("topright", legend = paste("krit. Werte = +/-", round(krit, 3)),
-       col = "red", lty = 2, bty = "n")
+abline(v = t_beob, col = "blue", lwd = 2)
+legend("topright",
+       legend = c(paste("krit. Werte = +/-", round(krit, 3)),
+                  paste("t aus Aufgabe 2 =", round(t_beob, 3)),
+                  paste("p-Wert =", round(res$p.value, 4))),
+       col = c("red", "blue", NA), lty = c(2, 1, NA), lwd = 2, bty = "n")
+# Der p-Wert ist die Fläche jenseits von |t_beob| auf beiden Seiten.
 
 
 # -----------------------------------------------------------------------------
@@ -152,13 +167,13 @@ boxplot(extra ~ group, data = sleep, col = c("skyblue", "salmon"),
 
 
 
-#######
-diff <- g2 - g1
-mean(diff)
-
+# Der gepaarte t-Test ist ein Einstichproben-t-Test auf die Differenzen
+differenzen <- g2 - g1
+mean(differenzen)
+t.test(differenzen, mu = 0)   # gleiches Ergebnis wie paar_test
 
 # Histogramm der gepaarten Differenzen
-hist(diff,
+hist(differenzen,
      breaks = 8,
      col = "lightgray",
      border = "white",
@@ -169,18 +184,17 @@ hist(diff,
 abline(v = 0, col = "black", lwd = 2, lty = 2)
 
 # Mittelwert der Differenzen
-abline(v = mean(diff), col = "red", lwd = 3)
+abline(v = mean(differenzen), col = "red", lwd = 3)
 
-# Kritische kleine Werte markieren, z.B. Differenzen nahe 0
-kritisch <- 0.2
-
-abline(v = -kritisch, col = "blue", lwd = 2, lty = 3)
-abline(v = kritisch, col = "blue", lwd = 2, lty = 3)
+# 95-%-Konfidenzintervall für den Mittelwert der Differenzen. Enthält es die 0
+# nicht, wird H0 zum Niveau 5 % abgelehnt (gleiche Entscheidung wie der Test).
+ki <- paar_test$conf.int
+abline(v = ki, col = "blue", lwd = 2, lty = 3)
 
 legend("topright",
-       legend = c("Kein Unterschied", 
+       legend = c("kein Unterschied",
                   "Mittelwert der Differenzen",
-                  "kritischer Bereich nahe 0"),
+                  "95-%-KI für den Mittelwert"),
        col = c("black", "red", "blue"),
        lty = c(2, 1, 3),
        lwd = c(2, 3, 2))

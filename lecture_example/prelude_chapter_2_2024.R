@@ -1,4 +1,4 @@
-# 2. Kapitel: In diesem Kapitel folgen die Beispiel zum 2. Kapitel und dienen noch einmal als Themen hinführung -----
+# 2. Kapitel: Beispiele zum 2. Kapitel, noch einmal als Hinführung zu den Themen -----
 # 2.1 Zweidimensionale Verteilungsfunktionen ----
 # Beispiel: Diskrete zweidimensionale Verteilungsfunktion
 
@@ -38,16 +38,22 @@ plot(data, main = "2D-Normalverteilung", xlab = "X1", ylab = "X2", pch = 19, col
 # 2.2 Ungleichung von Tschebyscheff -----
 # Beispiel: Anwendung der Tschebyscheff-Ungleichung
 
+# Tschebyscheff: P(|X - mu| < epsilon) >= 1 - sigma^2 / epsilon^2
+
 # Mittelwert und Varianz
 mu <- 5
 sigma2 <- 4
 
-# Abstand epsilon
-epsilon <- 2
+# Abstand epsilon: zwei Standardabweichungen (sigma = 2)
+# (Bei epsilon = sigma = 2 ergäbe sich nur die nutzlose Schranke 0.)
+epsilon <- 4
 
-# Wahrscheinlichkeit
+# Untere Schranke für die Wahrscheinlichkeit
 P <- 1 - sigma2 / epsilon^2
-P
+P   # mindestens 75 % der Werte liegen im Intervall (1, 9)
+
+# Vergleich: Ist X normalverteilt, liegen tatsächlich rund 95 % im Intervall
+pnorm(mu + epsilon, mean = mu, sd = sqrt(sigma2)) - pnorm(mu - epsilon, mean = mu, sd = sqrt(sigma2))
 
 # 2.3 Grenzwertsätze ---------
 # Beispiel: Würfelspiel und Grenzwertsätze
@@ -66,16 +72,19 @@ abline(h = 1/6, col = "red", lty = 2) # Erwartungswert
 
 # Beispiel: Zentraler Grenzwertsatz
 
+# Ausgangsverteilung ist die schiefe Exponentialverteilung: Wären die Daten selbst
+# normalverteilt, wäre auch der Mittelwert exakt normalverteilt, und der
+# zentrale Grenzwertsatz hätte nichts zu zeigen.
 set.seed(123)
 n <- 30 # Stichprobengröße
-mu <- 5 # Mittelwert
-sigma <- 2 # Standardabweichung
+mu <- 5 # Erwartungswert der Exponentialverteilung (rate = 1/5)
+sigma <- 5 # Standardabweichung der Exponentialverteilung
 
 # Generieren von Stichproben
-samples <- replicate(1000, mean(rnorm(n, mean = mu, sd = sigma)))
+samples <- replicate(1000, mean(rexp(n, rate = 1 / mu)))
 
 # Histogramm und Normalverteilung
-hist(samples, probability = TRUE, main = "Zentraler Grenzwertsatz",
+hist(samples, probability = TRUE, main = "Zentraler Grenzwertsatz (Exponentialverteilung)",
      xlab = "Mittelwert", ylab = "Dichte", col = "lightblue", breaks = 20)
 curve(dnorm(x, mean = mu, sd = sigma / sqrt(n)), col = "red", lwd = 2, add = TRUE)
 

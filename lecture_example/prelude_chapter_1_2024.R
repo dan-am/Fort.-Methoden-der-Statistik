@@ -5,7 +5,7 @@
 
 # Beispiel: Zweimaliger Münzwurf
 
-# Grundgesamtheit Ω
+# Ergebnismenge Ω (alle möglichen Ausgänge des Zufallsexperiments)
 omega <- expand.grid(c("K", "Z"), c("K", "Z"))
 
 # Ereignis A: Mindestens einmal Kopf
@@ -18,7 +18,7 @@ P_A
 
 # 1.2 Axiomatik der Wahrscheinlichkeitstheorie -----
 # Beispiel: Laplace-Wahrscheinlichkeit eines fairen Würfels
-# Grundgesamtheit
+# Ergebnismenge
 omega <- 1:6
 
 # Ereignis A: Würfeln einer geraden Zahl

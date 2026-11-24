@@ -2,3 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# Nebenprodukte beim Ausführen der Skripte
+Rplots.pdf
+report.html
+
+# macOS
+.DS_Store

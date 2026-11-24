@@ -144,6 +144,8 @@ perm_diff <- replicate(B, {
   mean(s[1:n1]) - mean(s[(n1+1):length(pool)])
 })
 
-p_perm <- mean(abs(perm_diff) >= abs(diff_obs))
-cat("Permutations-p-Wert:", round(p_perm, 4),
+# Die beobachtete Aufteilung zählt selbst als eine Permutation mit (+1 in Zähler
+# und Nenner). So wird der p-Wert nie exakt 0.
+p_perm <- (sum(abs(perm_diff) >= abs(diff_obs)) + 1) / (B + 1)
+cat("Permutations-p-Wert:", signif(p_perm, 3),
     "(beobachtete Differenz =", round(diff_obs, 3), ")\n")

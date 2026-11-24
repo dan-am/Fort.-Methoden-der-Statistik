@@ -93,7 +93,7 @@ cat("Diskordante Zellen:  Vorher Ja/Nachher Nein =",
 # Wende das auf die Kontingenztabelle (cyl x am) aus mtcars an.
 
 tab2 <- table(mtcars$cyl, mtcars$am)
-chi <- chisq.test(tab2)
+chi <- chisq.test(tab2)   # warnt: einige erwartete Häufigkeiten liegen unter 5 (nur 32 Autos)
 n   <- sum(tab2)
 V   <- sqrt(chi$statistic / (n * (min(dim(tab2)) - 1)))
 names(V) <- NULL
@@ -115,13 +115,20 @@ data(UCBAdmissions)
 gesamt <- apply(UCBAdmissions, c(1, 2), sum)
 print(gesamt)
 chisq.test(gesamt)
+# Zulassungsquote je Geschlecht über alle Departments
+round(prop.table(gesamt, margin = 2)["Admitted", ], 3)
 
-# pro Department
+# pro Department: Zulassungsquoten und Test
 for (d in dimnames(UCBAdmissions)$Dept) {
-  t <- UCBAdmissions[, , d]
-  p <- chisq.test(t)$p.value
-  cat("Dept", d, ": p =", round(p, 4), "\n")
+  tab_d <- UCBAdmissions[, , d]
+  quote <- prop.table(tab_d, margin = 2)["Admitted", ]
+  p <- chisq.test(tab_d)$p.value
+  cat("Dept", d, ": Quote Männer =", round(quote["Male"], 3),
+      "| Quote Frauen =", round(quote["Female"], 3), "| p =", round(p, 4), "\n")
 }
+# Insgesamt werden Männer häufiger zugelassen. In den meisten Departments liegt die
+# Quote der Frauen aber gleich hoch oder höher: Frauen bewarben sich häufiger bei
+# Departments mit niedriger Zulassungsquote.
 
 
 # -----------------------------------------------------------------------------
@@ -165,3 +172,6 @@ ci_r <- (exp(2 * ci_z) - 1) / (exp(2 * ci_z) + 1)
 
 cat("r =", round(r, 3),
     " | 95%-KI für rho:", round(ci_r, 3), "\n")
+
+# Kontrolle: cor.test() nutzt für das KI dieselbe Fisher-z-Transformation
+cor.test(x, y)$conf.int
